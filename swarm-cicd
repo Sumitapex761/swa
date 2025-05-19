@@ -1,0 +1,75 @@
+
+Take 3 machines:
+	1. Docker Swarm as Server
+	2. Docker 1 (Client)
+	3. Docker 2 (Client)
+
+
+This is same in server machine and client 1 and client 2
+sudo apt update  
+sudo apt install docker.io -y  
+
+sudo usermod iacsd -aG docker   {admin user ko Docker group me add karta hai. Taaki sudo ke bina Docker commands chal sake.}
+
+Session restart kr lena  (i.e :-  sudo reboot )
+grep 'docker' /etc/group   {Check karta hai ki Docker group bana hai ya nahi.}
+
+Run it on server machine  📦 Pulling Nginx & Creating a Simple Web App
+
+• docker pull nginx   { Official nginx image ko DockerHub se pull karta hai.}
+• docker images        {Local system me available images dikhaata hai.}
+• mkdir my_project
+• cd my_project
+• nano index.html
+
+
+
+Custom image ke liye Dockerfile create karte ho.
+
+1. nano Dockerfile
+
+FROM nginx  
+COPY  *  /usr/share/nginx/html/      {Yeh bolta hai: nginx base image lo, aur current folder ke saare HTML files nginx ke html path me
+                                                              daal do.}
+
+                                                                                        
+docker build -t sumitapex761/ctrl_ship:latest .     {Custom image build karta hai aur naam deta hai.}
+
+docker images     (Confirm karta hai ki image ban gayi.} 
+
+docker login   {   DockerHub pe login karna padta hai push karne ke liye.}
+
+
+docker push sumitapex761/ctrl_ship:latest  { Image ko DockerHub pe upload karte ho}
+cd
+docker swarm init    {Swarm mode start karta hai (on server machine). Ye command ek token deta hai.}
+
+docker node ls      {Saare nodes dikhaata hai jo swarm me connected hai.}
+
+docker service create --name myservice -p 80:80 -d durvesh123/myrepo:latest   { Nginx based service create karta hai swarm me using uploaded image}
+
+
+docker service ls        (Currently running services show karta hai.)
+
+docker service scale myservice=3    { we can add more myservice for i.e myservice =10      Same service ke 3 replicas bana deta hai (auto load-balanced).}
+
+
+docker ps
+
+
+
+
+
+🔁 Updating the Swarm Service (Replicating Changes)
+	1. nano index.html – HTML file me kuch changes karo.
+	2. docker build – Image dobara build karo.
+	3. docker push – DockerHub pe nayi image push karo.
+	4. docker service update – Running service ko naye image se update karo.
+
+For  i.e 
+
+nano index.html  
+docker build -t sumitapex761/ctrl_ship:latest 
+docker push sumitapex761/ctrl_ship:latest  
+docker service update --image sumitapex761/ctrl_ship:latest myservice     (Yeh command ensure karti hai ki saare nodes me updated version replicate ho.)
+
